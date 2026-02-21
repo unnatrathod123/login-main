@@ -69,8 +69,8 @@ public function sendVerification(Request $request)
 
        return redirect
        (
-             'http://localhost:3000?verified=1&email=' . urlencode($applicant->email)
-             //config('app.frontend_url') . '/email-verified'
+             //'http://localhost:3000?verified=1&email=' . urlencode($applicant->email)
+              config('app.frontend_url') . '/?verified=1&email=' . urlencode($applicant->email)
         );
     }
  //-------------------------------------------------------------------------------------

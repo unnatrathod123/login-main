@@ -39,6 +39,18 @@ class Application extends Model implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
+
+    public static function statuses(): array
+    {
+        return [
+            
+            'applied' => 'Applied',
+            'rejected'  => 'Rejected',
+            'shortlisted' => 'shortlisted',
+            'interview_scheduled' => 'Interview Scheduled',
+    
+        ];
+    }
     /**
      * Check if applicant has verified email
      */

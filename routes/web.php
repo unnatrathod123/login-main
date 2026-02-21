@@ -11,29 +11,30 @@ Route::get('/', function () {
 });
 
 
-// For Email Verification through Link
-Route::get('/email/verify/{id}/{hash}', function (Request $request) {
+// For Email Verification through Link ( We do not need this because we are using Laravel’s built-in system:)
+// Route::get('/email/verify/{id}/{hash}', function (Request $request) {
 
-    if (! $request->hasValidSignature()) {
-        abort(403, 'Invalid or expired link');
-    }
+//     if (! $request->hasValidSignature()) {
+//         abort(403, 'Invalid or expired link');
+//     }
 
-    $applicant = Application::findOrFail($request->id);
+//     $applicant = Application::findOrFail($request->id);
 
-    if (! hash_equals((string)$request->hash, sha1($applicant->email))) {
-        abort(403);
-    }
+//     if (! hash_equals((string)$request->hash, sha1($applicant->email))) {
+//         abort(403);
+//     }
 
-     // mark verified
-    $applicant->email_verified_at = now();
-    $applicant->save();
+//      // mark verified
+//     $applicant->email_verified_at = now();
+//     $applicant->save();
 
-    // redirect back to Next.js
-    return redirect
-        (
-                'http://localhost:3000/email-verified'
-        );
+//     // redirect back to Next.js
+//     return redirect
+//         (
+//                // 'http://localhost:3000/email-verified'
+//                config('app.frontend_url') . '/email-verified'
+//         );
 
-})->name('verification.verify');
+// })->name('verification.verify');
 
 
