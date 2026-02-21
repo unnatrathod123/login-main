@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use Illuminate\Http\Request; // For Email Link
-use App\Models\Applicant; // For Email Link
+use App\Models\Application; // For Email Link
 
 
 Route::get('/', function () {
@@ -18,7 +18,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request) {
         abort(403, 'Invalid or expired link');
     }
 
-    $applicant = Applicant::findOrFail($request->id);
+    $applicant = Application::findOrFail($request->id);
 
     if (! hash_equals((string)$request->hash, sha1($applicant->email))) {
         abort(403);

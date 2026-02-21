@@ -2,15 +2,15 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\ApplicationController; // For Verifying Email And Saving Input
 
-use App\Http\Controllers\Api\ApplicantController; // For Email Link verification
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/intern', [ApplicationController::class, 'application']);
+// Route::post('/intern', [ApplicationController::class, 'application']);
 
 
 // For Email Verification Through Link
