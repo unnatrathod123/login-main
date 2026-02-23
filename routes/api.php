@@ -32,3 +32,13 @@ Route::get('/email/verify/{id}/{hash}',
 //           ->subject('SMTP Working');
 //     });
 // });
+
+    // API for Intern
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/my-tasks', [TaskController::class, 'myTasks']);
+        Route::post('/task/submit/{id}', [TaskController::class, 'submitTask']);
+    });
+
+// For Creating User from Applications
+    Route::post('/applications/{id}/create-user', 
+    [ApplicationController::class, 'createUser']);

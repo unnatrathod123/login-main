@@ -31,7 +31,7 @@ class Application extends Model implements MustVerifyEmail
         'skills',
         'resume_path',
         'status',
-       
+        'user_id', // ⭐ REQUIRED added on 23/02/2026
     ];
 
      protected $casts = 
@@ -40,17 +40,36 @@ class Application extends Model implements MustVerifyEmail
     ];
 
 
+    public const STATUS_APPLIED = 'applied';
+    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_SHORTLISTED = 'shortlisted';
+    public const STATUS_INTERVIEW = 'interview_scheduled';
+
     public static function statuses(): array
     {
         return [
             
-            'applied' => 'Applied',
-            'rejected'  => 'Rejected',
-            'shortlisted' => 'shortlisted',
-            'interview_scheduled' => 'Interview Scheduled',
+        self::STATUS_APPLIED => 'Applied',
+        self::STATUS_REJECTED => 'Rejected',
+        self::STATUS_SHORTLISTED => 'Shortlisted',
+        self::STATUS_INTERVIEW => 'Interview Scheduled',
+
     
         ];
     }
+
+
+    public function createUser()
+    {
+        // return User::create([
+        //     'name' => $this->name,
+        //     'email' => $this->email,
+        //     'password' => Hash::make('password123'),
+        //     'email_verified_at' => $this->email_verified_at,
+        //     'role' => 'intern',
+        // ]);
+    }
+
     /**
      * Check if applicant has verified email
      */

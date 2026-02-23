@@ -10,45 +10,49 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\Notifications\VerifyEmail;
 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
 
 class ApplicationController extends Controller
 {
+    
     // SEND VERIFICATION LINK
-public function sendVerification(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email'
-    ]);
+    public function sendVerification(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
 
-    // Find existing applicant OR create new
-    $applicant = Application::firstOrCreate([
-        'email' => $request->email
-    ]);
+        // Find existing applicant OR create new
+        $applicant = Application::firstOrCreate([
+            'email' => $request->email
+        ]);
 
-    /*
-    |--------------------------------------------------------------------------
-    | ✅ IF EMAIL ALREADY VERIFIED
-    |--------------------------------------------------------------------------
-    */
-    if ($applicant->hasVerifiedEmail()) {
+        /*
+        |--------------------------------------------------------------------------
+        | ✅ IF EMAIL ALREADY VERIFIED
+        |--------------------------------------------------------------------------
+        */
+        if ($applicant->hasVerifiedEmail()) {
+            return response()->json([
+                'message'  => 'Email already verified earlier',
+                'verified' => true
+            ], 200);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ✅ SEND VERIFICATION EMAIL
+        |--------------------------------------------------------------------------
+        */
+        $applicant->sendEmailVerificationNotification();
+
         return response()->json([
-            'message'  => 'Email already verified earlier',
-            'verified' => true
+            'message'  => 'Verification link sent',
+            'verified' => false
         ], 200);
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | ✅ SEND VERIFICATION EMAIL
-    |--------------------------------------------------------------------------
-    */
-    $applicant->sendEmailVerificationNotification();
-
-    return response()->json([
-        'message'  => 'Verification link sent',
-        'verified' => false
-    ], 200);
-}
 
     // VERIFY EMAIL
     public function verifyEmail(Request $request, $id, $hash)
@@ -98,61 +102,72 @@ public function sendVerification(Request $request)
     public function submitApplication(Request $request)
     {
          // ✅ VALIDATION RULES
-    $validated = $request->validate([
-        'email'   => 'required|email|exists:applications,email',
-        'name'    => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
-        'phone'   => 'required|regex:/^[0-9]{10,15}$/',
-        'college' => 'nullable|string',
-        'degree'  => 'required|string',
-        // ADD THESE LINES:
-        'last_exam_appeared' => 'required|string|max:255',
-        'cgpa' => 'required|numeric|between:0,100', // Validates number between 0 and 100
-        'domain'  => 'required|string',
-                
-            // NEW
-        'duration' => 'required|integer|min:1',
-        'duration_unit' => 'required|in:months,days,hours',
-        
-        'skills'  => 'required|string',
-        'resume_path'  => 'nullable|file|mimes:pdf|max:10240',
-        
-    ]);
+        $validated = $request->validate([
+            'email'   => 'required|email|exists:applications,email',
+            'name'    => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
+            'phone'   => 'required|regex:/^[0-9]{10,15}$/',
+            'college' => 'nullable|string',
+            'degree'  => 'required|string',
+            // ADD THESE LINES:
+            'last_exam_appeared' => 'required|string|max:255',
+            'cgpa' => 'required|numeric|between:0,100', // Validates number between 0 and 100
+            'domain'  => 'required|string',
+                    
+                // NEW
+            'duration' => 'required|integer|min:1',
+            'duration_unit' => 'required|in:months,days,hours',
+            
+            'skills'  => 'required|string',
+            'resume_path'  => 'nullable|file|mimes:pdf|max:10240',
+            
+        ]);
 
-    $applicant = Application::where('email', $request->email)->firstOrFail();
+        $applicant = Application::where('email', $request->email)->firstOrFail();
 
-    // ✅ check email verification again (important)
-    if (!$applicant->email_verified_at) 
-        {
-            return response()->json([
-                'message' => 'Email not verified'
-            ], 403);
-        }
+        // ✅ check email verification again (important)
+        if (!$applicant->email_verified_at) 
+            {
+                return response()->json([
+                    'message' => 'Email not verified'
+                ], 403);
+            }
 
         $resumePath = null;
 
-if ($request->hasFile('resume_path')) {
-    $resumePath = $request->file('resume_path')
-        ->store('resumes', 'public'); // storage/app/public/resumes
-}
-            // ✅ save application data
-        $applicant->update([
-            'name' => $validated['name'],
-            'phone' => $validated['phone'],
-            'college' => $validated['college'],
-            'degree' => $validated['degree'],
-            'last_exam_appeared' => $validated['last_exam_appeared'],
-            'cgpa' => $validated['cgpa'],
-            'domain' => $validated['domain'],
-            'duration' => $validated['duration'],
-            'duration_unit' => $validated['duration_unit'],
-            'skills' => $validated['skills'],
-            'resume_path' => $resumePath,
+        if ($request->hasFile('resume_path')) {
+            $resumePath = $request->file('resume_path')
+                ->store('resumes', 'public'); // storage/app/public/resumes
+        }
+                // ✅ save application data
+            $applicant->update([
+                'name' => $validated['name'],
+                'phone' => $validated['phone'],
+                'college' => $validated['college'],
+                'degree' => $validated['degree'],
+                'last_exam_appeared' => $validated['last_exam_appeared'],
+                'cgpa' => $validated['cgpa'],
+                'domain' => $validated['domain'],
+                'duration' => $validated['duration'],
+                'duration_unit' => $validated['duration_unit'],
+                'skills' => $validated['skills'],
+                'resume_path' => $resumePath,
+                
             
-           
-        ]);
+            ]);
 
-        return response()->json([
-            'message' => 'Application submitted successfully'
-        ]);
+            return response()->json([
+                'message' => 'Application submitted successfully'
+            ]);
     }
+
+    
+// For creating user on 23/02/2026
+    public function shortlisted()
+    {
+        return Application::where('status', 'shortlisted')
+            ->whereNull('user_id')
+            ->get();
+    }
+   
 }
+

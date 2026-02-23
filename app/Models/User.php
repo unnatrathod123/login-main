@@ -22,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'email_verified_at', // ⭐ REQUIRED
     ];
 
     /**
@@ -45,5 +47,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // For Task Table Relationship intern
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'intern_id');
     }
 }

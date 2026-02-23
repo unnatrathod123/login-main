@@ -36,6 +36,12 @@ use Illuminate\Database\Eloquent\Collection;
 use Filament\Notifications\Notification;
 use Carbon\Carbon;
 use App\Models\Applicant;
+
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use App\Models\User;
+use Filament\Support\Enums\Alignment;
+
 class ApplicationResource extends Resource
 {
     protected static ?string $model = Application::class;
@@ -96,27 +102,27 @@ class ApplicationResource extends Resource
                     ]),
                 ]),
 
-            Section::make('Skills')
-                ->schema([
-                    Textarea::make('skills')
-                        ->label('Skills (comma separated)')
-                        ->rows(3)
-                        ->required(),
-                ]),
+                    Section::make('Skills')
+                        ->schema([
+                            Textarea::make('skills')
+                                ->label('Skills (comma separated)')
+                                ->rows(3)
+                                ->required(),
+                        ]),
 
-            Section::make('Resume')
-                ->schema([
-                    FileUpload::make('resume_path')
-                        ->label('Resume')
-                        ->disk('public')
-                        ->directory('resumes')
-                        ->acceptedFileTypes([
-                            'application/pdf',
-                        ])
-                        ->downloadable()
-                        ->openable()
-                        ->preserveFilenames(),
-                ]),
+                    Section::make('Resume')
+                        ->schema([
+                            FileUpload::make('resume_path')
+                                ->label('Resume')
+                                ->disk('public')
+                                ->directory('resumes')
+                                ->acceptedFileTypes([
+                                    'application/pdf',
+                                ])
+                                ->downloadable()
+                                ->openable()
+                                ->preserveFilenames(),
+                        ]),
 
                 Select::make('status')
                     ->options(Application::statuses())
@@ -135,6 +141,7 @@ class ApplicationResource extends Resource
             ->defaultSort('created_at', 'desc') // 🔥 newest on top
             ->columns([
                 // To display in table
+                 TextColumn::make('user_id'),
                 TextColumn::make('name')
                     ->searchable()
                     // 1. Change Font Color to Green ('success') if scheduled
@@ -196,15 +203,23 @@ class ApplicationResource extends Resource
                 ->actions([
 
                     // // TO view
-                     ViewAction::make(),
+                     ViewAction::make()
+                        ->label('') // remove text
+                        ->tooltip('View Application'),
+                    
+                    // for edit 
+                    Tables\Actions\EditAction::make()
+                        ->label('')
+                        ->tooltip('Edit Application'),
+
+
                     Action::make('download')
-                        ->label('Download Resume')
+                        ->label('')
                         ->icon('heroicon-o-arrow-down-tray')
+                        ->tooltip('Download Resume')
                         ->url(fn ($record) => asset('storage/' . $record->resume_path))
                         ->openUrlInNewTab(false),
-                      // for edit 
-                    Tables\Actions\EditAction::make(),
-
+                    
                      // for change status from intern
                         // Action::make('Schedule Interview')
                         //     ->visible(fn ($record) => $record->status === 'applied')
@@ -216,8 +231,50 @@ class ApplicationResource extends Resource
                         //     ->action(fn ($record) => $record->update(['status' => 'selected']))
                         //     ->color('success'),
 
+
+                // Button For User creation 
+                Action::make('createUser')
+                    ->label('Create User')
+                    ->icon('heroicon-o-user-plus')
+                    ->color('success')
+                    ->tooltip('Create Intern User')
+
+                    // ✅ show only when shortlisted
+                    ->visible(fn ($record) =>
+                        $record->status === 'shortlisted'
+                        && $record->user_id === null
+                    )
+
+                    ->action(function ($record) {
+
+                        // $password = Str::random(8);
+
+                        $user = User::create([
+                            'name' => $record->name,
+                            'email' => $record->email,
+                            'password' => Hash::make('password123'),
+                            'email_verified_at' => $record->email_verified_at,
+                            'role' => 'intern',
+                        ]);
+
+                        $record->update([
+                            'user_id' => $user->id
+                        ]);
+
+                        Notification::make()
+                            ->title('Intern account created')
+                            ->body("Temporary Password:password123")
+                            ->success()
+                            ->send();
+                    }),
+
                 ])
-                
+
+
+                ->actionsAlignment('left') // for aligning buttons
+                ->actionsColumnLabel('Actions')
+
+
                 ->bulkActions([
                     Tables\Actions\BulkActionGroup::make([
 
@@ -396,5 +453,14 @@ class ApplicationResource extends Resource
             'edit' => Pages\EditApplication::route('/{record}/edit'),
             // 'view' => Pages\ViewApplication::route('/{record}'),
         ];
+    }
+
+    // For Not displaying where Values are NULL
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereNotNull('name')
+            ->whereNotNull('phone')
+            ->whereNotNull('college');
     }
 }
