@@ -17,22 +17,38 @@ class TaskResource extends Resource
 {
     protected static ?string $model = Task::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 //
-                Forms\Components\Select::make('intern_id')
-                    ->label('Assign Intern')
-                    ->relationship('intern', 'name')
+
+                // // For Assigning Task to Single Intern
+                // Forms\Components\Select::make('intern_id')
+                //     ->label('Assign Intern')
+                //     ->relationship('intern', 'name')
+                //     ->options(
+                //         \App\Models\User::where('role', 'intern')
+                //             ->pluck('name', 'id')
+                //     )
+                //     ->searchable()
+                //     ->required(),
+                // //-----------------------------------------------
+
+                // For Assigning Task to Multiple Interns
+                Forms\Components\Select::make('interns')
+                    ->label('Assign Interns')
+                    ->multiple()
+                    ->relationship('interns', 'name')
                     ->options(
                         \App\Models\User::where('role', 'intern')
                             ->pluck('name', 'id')
                     )
-                    ->searchable()
-                    ->required(),
+                    ->searchable(),
+
+                //-----------------------------------------------
 
                 Forms\Components\TextInput::make('title')->required(),
 

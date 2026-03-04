@@ -16,16 +16,19 @@ Route::get('/user', function (Request $request) {
 // For Email Verification Through Link
 Route::post('/applicant/send-verification', [ApplicationController::class,'sendVerification']);
 
-// For Submitting Application
-Route::post('/applicant/submit', [ApplicationController::class,'submitApplication']);
-
-
 Route::get('/email/verify/{id}/{hash}',
     [ApplicationController::class, 'verifyEmail']
 )->name('verification.verify');
 
 
-// For Email Test
+
+// For Submitting Application
+Route::post('/applicant/submit', [ApplicationController::class,'submitApplication']);
+
+
+
+
+// // For Email Test
 // Route::get('/mail-test', function () {
 //     Mail::raw('SMTP Test OK', function ($m) {
 //         $m->to('unnatrathod1024@gmail.com')

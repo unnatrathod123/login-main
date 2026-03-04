@@ -14,6 +14,12 @@ return new class extends Migration
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
 
+
+            // Column added on 02/03/2026 
+            // ALTER TABLE applications 
+            // ADD application_id VARCHAR(20) UNIQUE AFTER id;
+            // $table->string('application_id');
+
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
 

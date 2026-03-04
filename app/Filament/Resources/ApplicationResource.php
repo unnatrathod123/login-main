@@ -49,6 +49,8 @@ class ApplicationResource extends Resource
    
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
+    protected static ?string $recordTitleAttribute = 'Name';
+
     public static function form(Form $form): Form
     {
         return $form
@@ -141,7 +143,7 @@ class ApplicationResource extends Resource
             ->defaultSort('created_at', 'desc') // 🔥 newest on top
             ->columns([
                 // To display in table
-                 TextColumn::make('user_id'),
+                 //TextColumn::make('user_id'),
                 TextColumn::make('name')
                     ->searchable()
                     // 1. Change Font Color to Green ('success') if scheduled
@@ -150,10 +152,13 @@ class ApplicationResource extends Resource
                     ->icon(fn ($record) => $record->status === 'interview_scheduled' ? 'heroicon-m-check-badge' : null)
                     // 3. Make the name bold if scheduled
                     ->weight(fn ($record) => $record->status === 'interview_scheduled' ? 'bold' : 'normal'),
+                
+                TextColumn::make('application_id'),
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('email_verified_at')->searchable(),
                 TextColumn::make('phone') ->toggleable(),
-                
+                TextColumn::make('duration'.'duration_unit')
+                ->label('Duration'),
                 BadgeColumn::make('status')
                 ->colors([
                     'primary' => 'applied',
@@ -218,7 +223,7 @@ class ApplicationResource extends Resource
                         ->icon('heroicon-o-arrow-down-tray')
                         ->tooltip('Download Resume')
                         ->url(fn ($record) => asset('storage/' . $record->resume_path))
-                        ->openUrlInNewTab(false),
+                        ->openUrlInNewTab(true),
                     
                      // for change status from intern
                         // Action::make('Schedule Interview')

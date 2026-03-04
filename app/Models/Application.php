@@ -70,17 +70,32 @@ class Application extends Model implements MustVerifyEmail
         // ]);
     }
 
-    /**
-     * Check if applicant has verified email
-     */
-    // public function isEmailVerified(): bool
-    // {
-    //     return !is_null($this->email_verified_at);
-    // }
+    // For Custom application_id
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($application) {
+
+            $year = date('Y');
+
+            $last = self::whereYear('created_at', $year)
+                        ->orderBy('id', 'desc')
+                        ->first();
+
+            if ($last && $last->application_id) {
+                $lastNumber = (int) explode('/', $last->application_id)[1];
+                $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newNumber = '001';
+            }
+
+            $application->application_id = 'IAPES/'.$year . '/' . $newNumber;
+        });
+    }
+    //--------------------------------
 
     
-    // public function sendEmailVerificationNotification()
-    // {
-    //     $this->notify(new VerifyEmailCustom());
-    // }
+
 }

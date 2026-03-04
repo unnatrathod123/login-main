@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\Notifications\VerifyEmail;
 
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-
+// use Illuminate\Support\Facades\Hash;
+// use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class ApplicationController extends Controller
 {
@@ -34,12 +34,32 @@ class ApplicationController extends Controller
         | ✅ IF EMAIL ALREADY VERIFIED
         |--------------------------------------------------------------------------
         */
-        if ($applicant->hasVerifiedEmail()) {
-            return response()->json([
-                'message'  => 'Email already verified earlier',
-                'verified' => true
-            ], 200);
+        if ($applicant->hasVerifiedEmail()) 
+        {
+                    
+                /*
+            |--------------------------------------------------------------------------
+            | ✅ CHECK IF USER ALREADY APPLIED
+            |--------------------------------------------------------------------------
+            | If name OR phone already exists, assume form already submitted
+            */
+
+             if (!empty($applicant->name) || !empty($applicant->phone)) 
+                {
+                    return response()->json([
+                        'message' => 'You have already applied.',
+                        'status'  => 'already_applied'
+                    ], 409); // 409 = Conflict
+                }
+            //----------------------------------------------------------------------------------
+            {
+                    return response()->json([
+                            'message'  => 'Email already verified earlier',
+                            'verified' => true
+                    ], 200);
+                }
         }
+        
 
         /*
         |--------------------------------------------------------------------------
@@ -96,11 +116,14 @@ class ApplicationController extends Controller
     ]);
     }
     //-------------------------------------------------------------------------------------
-
+  
     // For Submitting form
 
     public function submitApplication(Request $request)
     {
+
+    
+
          // ✅ VALIDATION RULES
         $validated = $request->validate([
             'email'   => 'required|email|exists:applications,email',
@@ -116,7 +139,8 @@ class ApplicationController extends Controller
                 // NEW
             'duration' => 'required|integer|min:1',
             'duration_unit' => 'required|in:months,days,hours',
-            
+            'refer' => 'required|in:website,social,linkedin,college,friend',
+
             'skills'  => 'required|string',
             'resume_path'  => 'nullable|file|mimes:pdf|max:10240',
             
@@ -131,6 +155,8 @@ class ApplicationController extends Controller
                     'message' => 'Email not verified'
                 ], 403);
             }
+
+    
 
         $resumePath = null;
 
@@ -151,8 +177,7 @@ class ApplicationController extends Controller
                 'duration_unit' => $validated['duration_unit'],
                 'skills' => $validated['skills'],
                 'resume_path' => $resumePath,
-                
-            
+                'refer' => $validated['refer'],
             ]);
 
             return response()->json([
@@ -167,6 +192,92 @@ class ApplicationController extends Controller
         return Application::where('status', 'shortlisted')
             ->whereNull('user_id')
             ->get();
+    }
+
+
+
+//---------- For Application Submission in Batch ------------------------
+
+   public function storeBatch(Request $request)
+    {
+        $request->validate([
+            'applications' => 'required|array|min:2|max:5'
+        ]);
+
+        $success = [];
+        $failed = [];
+
+        foreach ($request->applications as $index => $applicationData) {
+
+            try {
+
+                // Validate each application
+                $validator = validator($applicationData, [
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|email|unique:applications,email',
+                    'contact_number' => 'required|regex:/^[0-9]{10,15}$/',
+                    'domain' => 'required|string',
+                ]);
+
+                if ($validator->fails()) {
+                    $failed[] = [
+                        'index' => $index,
+                        'email' => $applicationData['email'] ?? null,
+                        'errors' => $validator->errors()
+                    ];
+                    continue; // Skip this one and move next
+                }
+
+                // Individual transaction per application
+                DB::transaction(function () use ($applicationData) {
+
+                    Application::create([
+                        'application_id' => $this->generateApplicationId(),
+                        'name' => $applicationData['name'],
+                        'email' => $applicationData['email'],
+                        'phone' => $applicationData['contact_number'],
+                        'domain' => $applicationData['domain'],
+                    ]);
+                });
+
+                $success[] = [
+                    'index' => $index,
+                    'email' => $applicationData['email']
+                ];
+
+            } catch (\Exception $e) {
+
+                $failed[] = [
+                    'index' => $index,
+                    'email' => $applicationData['email'] ?? null,
+                    'errors' => [$e->getMessage()]
+                ];
+            }
+        }
+
+        return response()->json([
+            'saved' => $success,
+            'failed' => $failed
+        ]);
+    }
+
+    private function generateApplicationId()
+    {
+        return DB::transaction(function () {
+
+            $year = date('Y');
+
+            $last = Application::whereYear('created_at', $year)
+                    ->lockForUpdate()
+                    ->latest()
+                    ->first();
+
+            $number = $last 
+                ? intval(substr($last->application_id, -3)) + 1 
+                : 1;
+
+            return "IAPES/$year/" . str_pad($number, 3, '0', STR_PAD_LEFT);
+        });
     }
    
 }

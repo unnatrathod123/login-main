@@ -11,6 +11,21 @@ Route::get('/', function () {
 });
 
 
+
+// Route::get('/update-application-ids', function () {
+
+//     $applications = Application::orderBy('id')->get();
+
+//     foreach ($applications as $index => $app) {
+//         $app->application_id = 'IAPES'.'/'.date('Y', strtotime($app->created_at)) . '/' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
+//         $app->save();
+//     }
+
+//     return "Application IDs Updated Successfully!";
+// });
+
+
+
 // For Email Verification through Link ( We do not need this because we are using Laravel’s built-in system:)
 // Route::get('/email/verify/{id}/{hash}', function (Request $request) {
 
