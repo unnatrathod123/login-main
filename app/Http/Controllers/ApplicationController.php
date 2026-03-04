@@ -44,13 +44,13 @@ class ApplicationController extends Controller
             | If name OR phone already exists, assume form already submitted
             */
 
-             if (!empty($applicant->name) || !empty($applicant->phone)) 
-                {
-                    return response()->json([
-                        'message' => 'You have already applied.',
-                        'status'  => 'already_applied'
-                    ], 409); // 409 = Conflict
-                }
+            //  if (!empty($applicant->name) || !empty($applicant->phone)) 
+            //     {
+            //         return response()->json([
+            //             'message' => 'You have already applied.',
+            //             'status'  => 'already_applied'
+            //         ], 409); // 409 = Conflict
+            //     }
             //----------------------------------------------------------------------------------
             {
                     return response()->json([
