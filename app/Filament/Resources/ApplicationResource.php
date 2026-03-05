@@ -130,7 +130,7 @@ class ApplicationResource extends Resource
                     ->options(Application::statuses())
                     ->default(Application::STATUS_APPLIED)
                     ->required()
-                    ->visible(fn () => auth()->user()?->role === 'admin'),
+                    //->visible(fn () => auth()->user()?->role === 'admin'),
             ]);
     }
 

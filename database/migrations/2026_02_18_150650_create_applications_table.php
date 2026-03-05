@@ -35,7 +35,9 @@ return new class extends Migration
             $table->enum('duration_unit', ['months', 'days', 'hours'])
                         ->default('months')
                         ->nullable();
-                        
+            $table->enum('source', ['website', 'search', 'social','linkedin','friend','college'])
+                        ->default('website')
+                        ->nullable();      
             $table->string('skills')->nullable();
             $table->string('resume_path')->nullable();
             $table->string('status')->default('applied');

@@ -28,10 +28,11 @@ class Application extends Model implements MustVerifyEmail
         'domain',
         'duration',
         'duration_unit',
+        'source',
         'skills',
         'resume_path',
         'status',
-        'user_id', // ⭐ REQUIRED added on 23/02/2026
+      
     ];
 
      protected $casts = 
