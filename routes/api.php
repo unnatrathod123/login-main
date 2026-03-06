@@ -3,14 +3,12 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApplicationController; // For Verifying Email And Saving Input
-
+use App\Http\Controllers\Api\AuthController; // For Authentication
 
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-
-// Route::post('/intern', [ApplicationController::class, 'application']);
 
 
 // For Email Verification Through Link
@@ -20,12 +18,22 @@ Route::get('/email/verify/{id}/{hash}',
     [ApplicationController::class, 'verifyEmail']
 )->name('verification.verify');
 
-
-
 // For Submitting Application
 Route::post('/applicant/submit', [ApplicationController::class,'submitApplication']);
 
 
+// For Intern Login
+Route::post('/intern/login', [AuthController::class, 'internLogin']);
+// For Admin Login
+Route::post('/admin/login', [AuthController::class, 'adminLogin']);
+
+// For Authenticate
+Route::middleware('auth:sanctum')->group(function () 
+{
+    Route::get('/me', [AuthController::class, 'me']);
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
 
 
 // // For Email Test

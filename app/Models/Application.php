@@ -104,7 +104,7 @@ class Application extends Model implements MustVerifyEmail
                 $newNumber = '001';
             }
 
-            $application->application_id = 'IAPES/' . $year . '/' . $newNumber;
+            $application->application_id = 'APP/' . $year . '/' . $newNumber;
         });
     }
     //--------------------------------

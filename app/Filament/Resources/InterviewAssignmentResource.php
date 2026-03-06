@@ -161,9 +161,9 @@ class InterviewAssignmentResource extends Resource
                                 'result' => 'selected'
                             ]);
 
-                            // Send email
-                            Mail::to($record->application->email)
-                                ->send(new CandidateSelectedMail($record));
+                            // // Send email
+                            // Mail::to($record->application->email)
+                            //     ->send(new CandidateSelectedMail($record));
 
                             $successCount++;
                         }

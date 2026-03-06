@@ -15,6 +15,7 @@ return new class extends Migration
             
             $table->id('intern_id');
             $table->string('application_id')->unique();
+            $table->string('password');
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->enum('status',['active','completed','dropped'])->default('active');

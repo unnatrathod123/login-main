@@ -42,8 +42,40 @@ class InternResource extends Resource
 
                 Tables\Columns\TextColumn::make('application.name')
                     ->label('Intern Name')
+                    ->description(fn ($record) => $record->application->college)
                     ->searchable()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('application.degree')
+                    ->label('Intern Course')
+                    ->searchable()
+                    ->sortable(),
+                
+                Tables\Columns\TextColumn::make('application.domain')
+                    ->label('Intern Domain')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('internship_duration')
+                    ->label('Internship Duration')
+                    ->getStateUsing(function ($record) {
+
+                        if (!$record->application) 
+                        {
+                            return 'No Application';
+                        }
+
+                        return $record->application->duration . ' ' . $record->application->duration_unit . '';
+                    }),
+
+                Tables\Columns\BadgeColumn::make('status')
+                    ->colors([
+                        'primary' => 'active',
+                        //'warning' => 'active',
+                        'success' => 'completed',
+                        'danger' => 'dropped',
+                    ])
+                    ->formatStateUsing(fn ($state) => ucfirst($state)),
             ])
             ->filters([
                 //

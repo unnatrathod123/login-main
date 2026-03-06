@@ -16,4 +16,11 @@ class ListTasks extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+     // To redirect on the page
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

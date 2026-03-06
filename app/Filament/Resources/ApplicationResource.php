@@ -186,60 +186,55 @@ class ApplicationResource extends Resource
             ])
 
             ->actions([
+     Tables\Actions\ActionGroup::make(
+                    [
+                            ViewAction::make()
+                                ->label('')
+                                ->tooltip('View Application'),
 
-                ViewAction::make()
-                    ->label('')
-                    ->tooltip('View Application'),
+                            Tables\Actions\EditAction::make()
+                                ->label('')
+                                ->tooltip('Edit Application'),
 
-                Tables\Actions\EditAction::make()
-                    ->label('')
-                    ->tooltip('Edit Application'),
+                            Action::make('download')
+                                ->label('')
+                                ->icon('heroicon-o-arrow-down-tray')
+                                ->tooltip('Download Resume')
+                                ->url(fn ($record) => asset('storage/' . $record->resume_path))
+                                ->openUrlInNewTab(),
 
-                Action::make('download')
-                    ->label('')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->tooltip('Download Resume')
-                    ->url(fn ($record) => asset('storage/' . $record->resume_path))
-                    ->openUrlInNewTab(),
+                        // To create intern for whom status is shortlisted
+                        Action::make('createIntern')
+                                ->label('')
+                                ->icon('heroicon-o-user-plus')
+                                ->color('success')
+                                ->tooltip('Create Intern Account')
 
-            // To create intern for whom status is shortlisted
-                Action::make('createIntern')
-                    ->label('')
-                    ->icon('heroicon-o-user-plus')
-                    ->color('success')
-                    ->tooltip('Create Intern Account')
+                                ->visible(fn ($record) =>
+                                    $record->status === 'shortlisted'
+                                    && $record->intern_id === null
+                                )
 
-                    ->visible(fn ($record) =>
-                        $record->status === 'shortlisted'
-                        && $record->intern_id === null
-                    )
+                                ->action(function ($record) {
 
-                    ->action(function ($record) {
+                                    $result = Intern::createFromApplication($record);
 
-                        $password = Str::random(8);
+                                    Notification::make()
+                                        ->title('Intern Account Created')
+                                        ->body("Temporary Password: {$result['password']}")
+                                        ->success()
+                                        ->send();
+                                })
 
-                        $intern = Intern::create([
-                            'application_id' => $record->application_id,
-                            'start_date' => now(),
-                            'end_date' => null,
-                            'status' => 'active'
-                        ]);
-
-                        $record->update([
-                            'intern_id' => $intern->intern_id
-                        ]);
-
-                        Notification::make()
-                            ->title('Intern Account Created')
-                            ->body("Temporary Password: {$password}")
-                            ->success()
-                            ->send();
-                    }),
-
-            ])
+                                ->after(function () {
+                                    $this->dispatch('refresh');
+                                }),
+                        ])
+                        
+                    ])
 
            
-
+           ->actionsPosition(\Filament\Tables\Enums\ActionsPosition::BeforeColumns)
             ->actionsColumnLabel('Actions')
 
             ->bulkActions(
@@ -305,11 +300,11 @@ class ApplicationResource extends Resource
                             $record->update([
                                 'status' => 'interview_scheduled'
                             ]);
-                            Mail::to($record->email)
-                                ->send(new InterviewScheduledMail(
-                                    $batch,      // first parameter
-                                    $record      // second parameter
-                                ));
+                            // Mail::to($record->email)
+                            //     ->send(new InterviewScheduledMail(
+                            //         $batch,      // first parameter
+                            //         $record      // second parameter
+                            //     ));
                             $scheduledCount++;
                         }
                     }
