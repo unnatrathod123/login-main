@@ -5,7 +5,7 @@ namespace App\Filament\Widgets;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
-use App\Models\User;
+use App\Models\Intern;
 use App\Models\Application;
 use App\Models\Task;
 use App\Models\Event;
@@ -25,11 +25,17 @@ class AdminStatsOverview extends BaseWidget
     });
 
     return [
-        Stat::make('Total Interns', User::where('role', 'intern')->count())
-            ->description('Registered interns')
+        Stat::make('Total Interns', Intern::count())
+            ->description('Total interns')
             ->descriptionIcon('heroicon-m-user-group')
             ->color('primary')
             ->chart($applicationsLast7Days->toArray()),
+
+        // Stat::make('Total Interns', Intern::where('status', 'active')->count())
+        //     ->description('Active interns')
+        //     ->descriptionIcon('heroicon-m-user-group')
+        //     ->color('primary')
+        //     ->chart($applicationsLast7Days->toArray()),
 
         Stat::make('Pending Applications', Application::where('status', 'applied')->count())
             ->description('Awaiting review')

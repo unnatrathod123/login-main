@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\Notifications\VerifyEmail;
 
-// use Illuminate\Support\Facades\Hash;
-// use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 class ApplicationController extends Controller
@@ -25,9 +25,22 @@ public function submitApplication(Request $request)
 {
     $resumePath = null;
 
-    if ($request->hasFile('resume_path')) {
-        $resumePath = $request->file('resume_path')
-            ->store('resumes', 'public');
+    if ($request->hasFile('resume_path')) 
+    {
+        $file = $request->file('resume_path');
+        
+        // 1. Get the original extension (e.g., 'pdf', 'docx')
+        $extension = $file->getClientOriginalExtension();
+        
+        // 2. Make the name safe for a URL/folder (e.g., "Unnat Rathod" -> "unnat-rathod")
+        $safeName = Str::slug($request->name);
+        
+        // 3. Construct the new file name with a timestamp to prevent overwriting
+        // Result: unnat-rathod-1710500000.pdf
+        $fileName = $safeName .'.' . $extension;
+        
+        // 4. Use storeAs() to save it with our custom name
+        $resumePath = $file->storeAs('resumes', $fileName, 'public');
     }
 
     Application::updateOrCreate(
@@ -130,21 +143,26 @@ public function submitApplication(Request $request)
 
     private function generateApplicationId()
     {
-        return DB::transaction(function () {
+    //     return DB::transaction(function () {
+    //     $year = date('Y');
 
-            $year = date('Y');
+    //     // Order by 'id' to ensure we get the absolute latest, even if created_at timestamps match
+    //     $last = Application::whereYear('created_at', $year)
+    //             ->lockForUpdate()
+    //             ->latest('id') 
+    //             ->first();
 
-            $last = Application::whereYear('created_at', $year)
-                    ->lockForUpdate()
-                    ->latest()
-                    ->first();
+    //     if ($last && $last->application_id) {
+    //         // Split "IAPES/2026/001" by the slash and grab the last part ("001")
+    //         $parts = explode('/', $last->application_id);
+    //         $lastNumber = intval(end($parts)); 
+    //         $number = $lastNumber + 1;
+    //     } else {
+    //         $number = 1;
+    //     }
 
-            $number = $last 
-                ? intval(substr($last->application_id, -3)) + 1 
-                : 1;
-
-            return "IAPES/$year/" . str_pad($number, 3, '0', STR_PAD_LEFT);
-        });
+    //     return "IAPES/$year/" . str_pad($number, 3, '0', STR_PAD_LEFT);
+    // });
     }
    
 }

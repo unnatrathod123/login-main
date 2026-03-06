@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use App\Notifications\VerifyEmailCustom;
+use App\Models\Intern;
 
 class Application extends Model implements MustVerifyEmail
 {
@@ -32,7 +33,7 @@ class Application extends Model implements MustVerifyEmail
         'skills',
         'resume_path',
         'status',
-      
+        'intern_id',
     ];
 
      protected $casts = 
@@ -62,20 +63,26 @@ class Application extends Model implements MustVerifyEmail
 
     public function createUser()
     {
-        // return User::create([
-        //     'name' => $this->name,
-        //     'email' => $this->email,
-        //     'password' => Hash::make('password123'),
-        //     'email_verified_at' => $this->email_verified_at,
-        //     'role' => 'intern',
-        // ]);
+        return Intern::create([
+            'name' => $this->name,
+            'email' => $this->email,
+            'password' => Hash::make('password123'),
+            'email_verified_at' => $this->email_verified_at,
+           
+        ]);
+    }
+
+
+    public function intern()
+    {
+        return $this->hasOne(Intern::class, 'application_id', 'application_id');
     }
 
     // For Custom application_id
 
     protected static function boot()
     {
-        parent::boot();
+       parent::boot();
 
         static::creating(function ($application) {
 
@@ -86,13 +93,18 @@ class Application extends Model implements MustVerifyEmail
                         ->first();
 
             if ($last && $last->application_id) {
-                $lastNumber = (int) explode('/', $last->application_id)[1];
+                // Split "IAPES/2026/001" into an array
+                $parts = explode('/', $last->application_id);
+                
+                // Grab the very last item in the array ("001") instead of index [1]
+                $lastNumber = (int) end($parts);
+                
                 $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
             } else {
                 $newNumber = '001';
             }
 
-            $application->application_id = 'IAPES/'.$year . '/' . $newNumber;
+            $application->application_id = 'IAPES/' . $year . '/' . $newNumber;
         });
     }
     //--------------------------------

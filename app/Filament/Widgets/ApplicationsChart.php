@@ -23,8 +23,10 @@ class ApplicationsChart extends ChartWidget
             )->count();
         });
 
-        return [
-            'datasets' => [
+        return 
+        [
+            'datasets' => 
+            [
                 [
                     'label' => 'Applications',
                     'data' => $data,
