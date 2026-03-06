@@ -21,7 +21,9 @@ Route::get('/email/verify/{id}/{hash}',
 // For Submitting Application
 Route::post('/applicant/submit', [ApplicationController::class,'submitApplication']);
 
-
+Route::get('/applications', function () {
+    return App\Models\Application::all();
+});
 // // For Intern Login
 // Route::post('/intern/login', [AuthController::class, 'internLogin']);
 // // For Admin Login
