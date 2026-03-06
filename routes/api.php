@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApplicationController; // For Verifying Email And Saving Input
-use App\Http\Controllers\Api\AuthController; // For Authentication
+//use App\Http\Controllers\Api\AuthController; // For Authentication
 
 
 Route::get('/user', function (Request $request) {
@@ -22,18 +22,18 @@ Route::get('/email/verify/{id}/{hash}',
 Route::post('/applicant/submit', [ApplicationController::class,'submitApplication']);
 
 
-// For Intern Login
-Route::post('/intern/login', [AuthController::class, 'internLogin']);
-// For Admin Login
-Route::post('/admin/login', [AuthController::class, 'adminLogin']);
+// // For Intern Login
+// Route::post('/intern/login', [AuthController::class, 'internLogin']);
+// // For Admin Login
+// Route::post('/admin/login', [AuthController::class, 'adminLogin']);
 
-// For Authenticate
-Route::middleware('auth:sanctum')->group(function () 
-{
-    Route::get('/me', [AuthController::class, 'me']);
+// // For Authenticate
+// Route::middleware('auth:sanctum')->group(function () 
+// {
+//     Route::get('/me', [AuthController::class, 'me']);
 
-    Route::post('/logout', [AuthController::class, 'logout']);
-});
+//     Route::post('/logout', [AuthController::class, 'logout']);
+// });
 
 
 // // For Email Test
@@ -45,11 +45,11 @@ Route::middleware('auth:sanctum')->group(function ()
 // });
 
     // API for Intern
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/my-tasks', [TaskController::class, 'myTasks']);
-        Route::post('/task/submit/{id}', [TaskController::class, 'submitTask']);
-    });
+//     Route::middleware('auth:sanctum')->group(function () {
+//         Route::get('/my-tasks', [TaskController::class, 'myTasks']);
+//         Route::post('/task/submit/{id}', [TaskController::class, 'submitTask']);
+//     });
 
-// For Creating User from Applications
-    Route::post('/applications/{id}/create-user', 
-    [ApplicationController::class, 'createUser']);
+// // For Creating User from Applications
+//     Route::post('/applications/{id}/create-user', 
+//     [ApplicationController::class, 'createUser']);
