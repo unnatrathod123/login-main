@@ -21,8 +21,11 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Expose Render port
+# Set permissions
+RUN chmod -R 775 storage bootstrap/cache
+
+# Expose dynamic port
 EXPOSE 10000
 
-# Start Laravel
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
+# Start Laravel server
+CMD php -S 0.0.0.0:$PORT -t public
